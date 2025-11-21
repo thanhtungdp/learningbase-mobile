@@ -176,6 +176,8 @@ export const authService = {
         `scope=${encodeURIComponent('profile email')}&` +
         `state=${encodeURIComponent(state)}`;
 
+      console.log('open login')
+
       const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
 
       console.log(result)
