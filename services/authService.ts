@@ -170,6 +170,8 @@ export const authService = {
         `response_type=token&` +
         `scope=${encodeURIComponent('email profile')}`;
 
+      console.log(authUrl)
+
       const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
 
       if (result.type === 'success' && result.url) {
