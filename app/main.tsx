@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator, Alert, Modal, TouchableOpacity, Text } from 'react-native';
+import { View, StyleSheet, Alert, Modal, TouchableOpacity, Text, Dimensions } from 'react-native';
+import SkeletonPlaceholder from 'react-native-reanimated-skeleton';
 import { WebView } from 'react-native-webview';
 import { useRouter } from 'expo-router';
 import { WebViewNavBar } from '@/components/WebViewNavBar';
@@ -108,7 +109,8 @@ export default function MainScreen() {
         onRefresh={handleRefresh}
         onOptionsPress={handleOptionsPress}
       />
-      <WebView
+      <View style={styles.webviewContainer}>
+        <WebView
         ref={webViewRef}
         source={{ uri: initialUrl }}
         style={styles.webview}
@@ -127,13 +129,29 @@ export default function MainScreen() {
         cacheMode="LOAD_CACHE_ELSE_NETWORK"
         domStorageEnabled={true}
         javaScriptEnabled={true}
-      />
+        />
 
-      {isLoading && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#2266E1" />
-        </View>
-      )}
+        {isLoading && (
+          <View style={styles.loadingOverlay}>
+            <SkeletonPlaceholder borderRadius={4}>
+              <SkeletonPlaceholder.Item padding={20}>
+                <SkeletonPlaceholder.Item width="100%" height={40} marginBottom={20} />
+                <SkeletonPlaceholder.Item width="100%" height={200} marginBottom={20} />
+                <SkeletonPlaceholder.Item flexDirection="row" justifyContent="space-between" marginBottom={20}>
+                  <SkeletonPlaceholder.Item width="48%" height={120} />
+                  <SkeletonPlaceholder.Item width="48%" height={120} />
+                </SkeletonPlaceholder.Item>
+                <SkeletonPlaceholder.Item width="100%" height={150} marginBottom={20} />
+                <SkeletonPlaceholder.Item flexDirection="row" justifyContent="space-between">
+                  <SkeletonPlaceholder.Item width="30%" height={100} />
+                  <SkeletonPlaceholder.Item width="30%" height={100} />
+                  <SkeletonPlaceholder.Item width="30%" height={100} />
+                </SkeletonPlaceholder.Item>
+              </SkeletonPlaceholder.Item>
+            </SkeletonPlaceholder>
+          </View>
+        )}
+      </View>
 
       <Modal
         visible={showOptionsMenu}
@@ -174,6 +192,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  webviewContainer: {
+    flex: 1,
+    position: 'relative',
+  },
   webview: {
     flex: 1,
     paddingBottom: 8,
@@ -185,8 +207,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
+    zIndex: 1,
   },
   modalOverlay: {
     flex: 1,
