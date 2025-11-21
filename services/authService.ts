@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as WebBrowser from 'expo-web-browser';
-import * as Linking from 'expo-linking';
+import * as AuthSession from 'expo-auth-session';
 
 const LOGIN_API_URL = 'https://learningbases.com/api/login';
 const REGISTER_API_URL = 'https://learningbases.com/api/register';
@@ -163,7 +163,13 @@ export const authService = {
   async loginWithGoogle(): Promise<GoogleUserInfo | null> {
     try {
       const GOOGLE_CLIENT_ID = '39223075628-b8hsm0a8rgcp4c84ac3qspgkd1fffpc5.apps.googleusercontent.com';
-      const redirectUri = 'learningbases://auth/google/callback';
+
+      const redirectUri = AuthSession.makeRedirectUri({
+        scheme: 'learningbases',
+        path: 'auth/google/callback'
+      });
+
+      console.log('Redirect URI:', redirectUri);
 
       const state = btoa(JSON.stringify({
         returnTo: 'mobile-app',
