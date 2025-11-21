@@ -6,16 +6,24 @@ import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { authService } from '@/services/authService';
 
-export default function LoginScreen() {
+export default function SignupScreen() {
   const router = useRouter();
-  const [usernameOrEmail, setUsernameOrEmail] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleLogin = async () => {
-    if (!usernameOrEmail || !password) {
-      setError('Please enter both username/email and password');
+  const handleSignup = async () => {
+    if (!firstName || !lastName || !username || !email || !password) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long');
       return;
     }
 
@@ -23,13 +31,23 @@ export default function LoginScreen() {
     setLoading(true);
 
     try {
-      await authService.login({ usernameOrEmail, password });
+      await authService.signup({
+        firstName,
+        lastName,
+        username,
+        email,
+        password,
+      });
       router.replace('/main');
-    } catch (err) {
-      setError('Login failed. Please check your credentials.');
+    } catch (err: any) {
+      setError(err.message || 'Signup failed. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const navigateToLogin = () => {
+    router.push('/login');
   };
 
   return (
@@ -39,7 +57,11 @@ export default function LoginScreen() {
       end={{ x: 1, y: 1 }}
       style={styles.gradient}
     >
-
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.content}>
           <View style={styles.header}>
             <Image
@@ -47,15 +69,39 @@ export default function LoginScreen() {
               style={styles.logo}
               resizeMode="contain"
             />
-            <Text style={styles.subtitle}>Drive engagement and growth with an all-in-one, AI-powered learning platform</Text>
+            <Text style={styles.subtitle}>Create your account to get started</Text>
           </View>
 
           <View style={styles.form}>
             <Input
-              label="Username or Email"
-              placeholder="Enter your username or email"
-              value={usernameOrEmail}
-              onChangeText={setUsernameOrEmail}
+              label="First Name"
+              placeholder="Enter your first name"
+              value={firstName}
+              onChangeText={setFirstName}
+              autoCapitalize="words"
+            />
+
+            <Input
+              label="Last Name"
+              placeholder="Enter your last name"
+              value={lastName}
+              onChangeText={setLastName}
+              autoCapitalize="words"
+            />
+
+            <Input
+              label="Username"
+              placeholder="Choose a username"
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+            />
+
+            <Input
+              label="Email"
+              placeholder="Enter your email"
+              value={email}
+              onChangeText={setEmail}
               autoCapitalize="none"
               autoComplete="email"
               keyboardType="email-address"
@@ -63,7 +109,7 @@ export default function LoginScreen() {
 
             <Input
               label="Password"
-              placeholder="Enter your password"
+              placeholder="Create a password (min 8 characters)"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -77,20 +123,21 @@ export default function LoginScreen() {
             )}
 
             <Button
-              title="Sign In"
-              onPress={handleLogin}
+              title="Sign Up"
+              onPress={handleSignup}
               loading={loading}
               disabled={loading}
             />
 
-            <View style={styles.signupPrompt}>
-              <Text style={styles.signupPromptText}>Don't have an account? </Text>
-              <TouchableOpacity onPress={() => router.push('/signup')}>
-                <Text style={styles.signupLink}>Sign Up</Text>
+            <View style={styles.loginPrompt}>
+              <Text style={styles.loginPromptText}>Already have an account? </Text>
+              <TouchableOpacity onPress={navigateToLogin}>
+                <Text style={styles.loginLink}>Sign In</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
+      </ScrollView>
     </LinearGradient>
   );
 }
@@ -99,21 +146,19 @@ const styles = StyleSheet.create({
   gradient: {
     flex: 1,
   },
-  container: {
+  scrollView: {
     flex: 1,
-    paddingTop: 240
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
   },
   content: {
     padding: 24,
-    paddingTop: 100
+    paddingTop: 60,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: 32,
   },
   logo: {
     height: 60,
@@ -123,7 +168,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#fff',
-    textAlign: 'center'
+    textAlign: 'center',
   },
   form: {
     backgroundColor: '#fff',
@@ -148,16 +193,16 @@ const styles = StyleSheet.create({
     color: '#dc2626',
     fontSize: 14,
   },
-  signupPrompt: {
+  loginPrompt: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 16,
   },
-  signupPromptText: {
+  loginPromptText: {
     fontSize: 14,
     color: '#6b7280',
   },
-  signupLink: {
+  loginLink: {
     fontSize: 14,
     color: '#2266E1',
     fontWeight: '600',

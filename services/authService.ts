@@ -1,10 +1,19 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'https://learningbases.com/api/login';
+const LOGIN_API_URL = 'https://learningbases.com/api/login';
+const REGISTER_API_URL = 'https://learningbases.com/api/register';
 const ORGANIZATION_ID = 'fb5f5a11-9cd2-43a8-964e-240c9ff9ea22';
 
 export interface LoginCredentials {
   usernameOrEmail: string;
+  password: string;
+}
+
+export interface SignupCredentials {
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
   password: string;
 }
 
@@ -31,7 +40,7 @@ const STORAGE_KEYS = {
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch(LOGIN_API_URL, {
         method: 'POST',
         headers: {
           'accept': '*/*',
@@ -55,6 +64,41 @@ export const authService = {
 
       await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
       await AsyncStorage.setItem(STORAGE_KEYS.COOKIE, cookie);
+
+      return { user, cookie };
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async signup(credentials: SignupCredentials): Promise<AuthResponse> {
+    try {
+      const response = await fetch(REGISTER_API_URL, {
+        method: 'POST',
+        headers: {
+          'accept': '*/*',
+          'accept-language': 'en-US,en;q=0.9',
+          'content-type': 'application/json',
+          'origin': 'https://learningbases.com',
+          'referer': 'https://learningbases.com/auth',
+          'x-organization-id': ORGANIZATION_ID,
+        },
+        body: JSON.stringify(credentials),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Signup failed');
+      }
+
+      const user: User = await response.json();
+
+      const setCookieHeader = response.headers.get('set-cookie');
+      const cookie = setCookieHeader || '';
+
+      await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+      await AsyncStorage.setItem(STORAGE_KEYS.COOKIE, cookie);
+      await AsyncStorage.setItem(STORAGE_KEYS.LAST_URL, 'https://learningbases.com/explore');
 
       return { user, cookie };
     } catch (error) {
