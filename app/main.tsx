@@ -14,6 +14,7 @@ export default function MainScreen() {
   const [cookie, setCookie] = useState<string | null>(null);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [initialUrl, setInitialUrl] = useState<string>(BASE_URL);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadInitialData();
@@ -111,6 +112,8 @@ export default function MainScreen() {
         ref={webViewRef}
         source={{ uri: initialUrl }}
         style={styles.webview}
+        onLoadStart={() => setIsLoading(true)}
+        onLoadEnd={() => setIsLoading(false)}
         onNavigationStateChange={(navState) => {
           setCanGoBack(navState.canGoBack);
           if (navState.url) {
@@ -125,6 +128,12 @@ export default function MainScreen() {
         domStorageEnabled={true}
         javaScriptEnabled={true}
       />
+
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#2266E1" />
+        </View>
+      )}
 
       <Modal
         visible={showOptionsMenu}
@@ -168,6 +177,16 @@ const styles = StyleSheet.create({
   webview: {
     flex: 1,
     paddingBottom: 8,
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalOverlay: {
     flex: 1,
