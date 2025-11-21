@@ -178,12 +178,12 @@ export const authService = {
 
       const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
 
+      console.log(result)
+
       if (result.type === 'success' && result.url) {
         const url = result.url;
         const codeMatch = url.match(/code=([^&]+)/);
         const code = codeMatch ? codeMatch[1] : null;
-
-        console.log('login success')
         
         if (code) {
           const response = await fetch(redirectUri, {
