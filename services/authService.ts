@@ -183,6 +183,8 @@ export const authService = {
         const codeMatch = url.match(/code=([^&]+)/);
         const code = codeMatch ? codeMatch[1] : null;
 
+        console.log('login success')
+        
         if (code) {
           const response = await fetch(redirectUri, {
             method: 'GET',
