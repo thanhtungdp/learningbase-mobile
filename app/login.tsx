@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingTop: 220
+    paddingTop: 240
   },
   scrollContent: {
     flexGrow: 1,
@@ -102,6 +102,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 24,
+    paddingTop: 240
   },
   header: {
     alignItems: 'center',
