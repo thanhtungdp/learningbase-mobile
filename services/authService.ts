@@ -164,32 +164,44 @@ export const authService = {
       const GOOGLE_CLIENT_ID = '39223075628-b8hsm0a8rgcp4c84ac3qspgkd1fffpc5.apps.googleusercontent.com';
       const redirectUri = 'https://learningbases.com/api/auth/google/callback';
 
-      const authUrl = 'https://accounts.google.com/v3/signin/accountchooser?client_id=39223075628-b8hsm0a8rgcp4c84ac3qspgkd1fffpc5.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Flearningbases.com%2Fapi%2Fauth%2Fgoogle%2Fcallback&response_type=code&scope=profile+email&state=eyJyZXR1cm5UbyI6Imh0dHBzOi8vbGVhcm5pbmdiYXNlcy5jb20vIiwidGltZXN0YW1wIjoxNzYzNzM4ODIzNzEyfQ%3D%3D&dsh=S1544833645%3A1763738823924003&o2v=2&service=lso&flowName=GeneralOAuthFlow&opparams=%253F&continue=https%3A%2F%2Faccounts.google.com%2Fsignin%2Foauth%2Fconsent%3Fauthuser%3Dunknown%26part%3DAJi8hAMBE9V_GBjTe1fvkkSg4vapFBVzG4fSRy1pTSmDpJOqDlhLCAiU-cFLZxdUmtEl2Nsoqlcv7qKLiKcBAIJmz-cwDSU-Cqx95LV0D0VKIAj1kqgNmpPRVP2mb9R9Q8leJzV0HSdgKid-XJHQBJnEOExDizcpmcO8rgexMTuV3pxYj4o1PEppTeKPsRRcup_aZ5tVmRUQZOA6I1TMJMynWBzDz-iVfiutxybv4MAE0lw8lnFPLrTQEdDr1yBxA4lBxIXinVzND13jieqsG1wbozeRXSFXlMeBDZOBN7j9sNIizMKPbTAdeFKirUFdQxqzoM1QvzErqgHIqOza8m2kWcl2ai8eK3IRvgCwsN-k9vf4PsTr25Mt0UCmjaY-uG_XkJzqAvMHC6okwMbMmIhydv4qBSesR4gsA15jVWZV0lDaqMavSuqITu-dvMrBDqNTbgYEQFiWHifUgfseSdXU7G8DOj72_w%26flowName%3DGeneralOAuthFlow%26as%3DS1544833645%253A1763738823924003%26client_id%3D39223075628-b8hsm0a8rgcp4c84ac3qspgkd1fffpc5.apps.googleusercontent.com%26requestPath%3D%252Fsignin%252Foauth%252Fconsent%23&app_domain=https%3A%2F%2Flearningbases.com'
+      const state = btoa(JSON.stringify({
+        returnTo: 'https://learningbases.com/',
+        timestamp: Date.now()
+      }));
 
-      console.log(authUrl)
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+        `client_id=${GOOGLE_CLIENT_ID}&` +
+        `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+        `response_type=code&` +
+        `scope=${encodeURIComponent('profile email')}&` +
+        `state=${encodeURIComponent(state)}`;
 
       const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
 
       if (result.type === 'success' && result.url) {
         const url = result.url;
-        const accessTokenMatch = url.match(/access_token=([^&]+)/);
-        const accessToken = accessTokenMatch ? accessTokenMatch[1] : null;
+        const codeMatch = url.match(/code=([^&]+)/);
+        const code = codeMatch ? codeMatch[1] : null;
 
-        if (accessToken) {
-          const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+        if (code) {
+          const response = await fetch(redirectUri, {
+            method: 'GET',
             headers: {
-              Authorization: `Bearer ${accessToken}`,
+              'Accept': 'application/json',
             },
           });
 
-          if (userInfoResponse.ok) {
-            const userInfo = await userInfoResponse.json();
-            return {
-              id: userInfo.id,
-              email: userInfo.email,
-              name: userInfo.name,
-              picture: userInfo.picture,
-            };
+          if (response.ok) {
+            const data = await response.json();
+
+            if (data.user) {
+              return {
+                id: data.user.id || data.user.googleId,
+                email: data.user.email,
+                name: data.user.name || `${data.user.firstName} ${data.user.lastName}`,
+                picture: data.user.picture || data.user.avatar || '',
+              };
+            }
           }
         }
       }
