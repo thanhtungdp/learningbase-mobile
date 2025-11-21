@@ -94,6 +94,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    paddingTop: 220
   },
   scrollContent: {
     flexGrow: 1,
