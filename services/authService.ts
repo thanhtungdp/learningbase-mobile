@@ -38,6 +38,7 @@ export interface GoogleUserInfo {
   email: string;
   name: string;
   picture: string;
+  cookie?: string;
 }
 
 const STORAGE_KEYS = {
@@ -165,7 +166,7 @@ export const authService = {
       const redirectUri = 'https://learningbases.com/api/auth/google/callback';
 
       const state = btoa(JSON.stringify({
-        returnTo: 'https://learningbases.com/',
+        returnTo: 'mobile-app-close',
         timestamp: Date.now()
       }));
 
@@ -176,36 +177,30 @@ export const authService = {
         `scope=${encodeURIComponent('profile email')}&` +
         `state=${encodeURIComponent(state)}`;
 
-      console.log('open login')
-
       const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
-
-      console.log(result)
 
       if (result.type === 'success' && result.url) {
         const url = result.url;
-        const codeMatch = url.match(/code=([^&]+)/);
-        const code = codeMatch ? codeMatch[1] : null;
-        
-        if (code) {
-          const response = await fetch(redirectUri, {
-            method: 'GET',
-            headers: {
-              'Accept': 'application/json',
-            },
-          });
 
-          if (response.ok) {
-            const data = await response.json();
+        const userMatch = url.match(/user=([^&]+)/);
+        const cookieMatch = url.match(/cookie=([^&]+)/);
 
-            if (data.user) {
-              return {
-                id: data.user.id || data.user.googleId,
-                email: data.user.email,
-                name: data.user.name || `${data.user.firstName} ${data.user.lastName}`,
-                picture: data.user.picture || data.user.avatar || '',
-              };
-            }
+        if (userMatch) {
+          try {
+            const userDataEncoded = decodeURIComponent(userMatch[1]);
+            const userData = JSON.parse(userDataEncoded);
+
+            const cookie = cookieMatch ? decodeURIComponent(cookieMatch[1]) : '';
+
+            return {
+              id: userData.id,
+              email: userData.email,
+              name: userData.name || `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
+              picture: userData.picture || userData.avatar || '',
+              cookie: cookie,
+            };
+          } catch (parseError) {
+            console.error('Error parsing user data:', parseError);
           }
         }
       }

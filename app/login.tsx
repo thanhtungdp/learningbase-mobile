@@ -15,6 +15,7 @@ interface GoogleUserInfo {
   email: string;
   name: string;
   picture: string;
+  cookie?: string;
 }
 
 export default function LoginScreen() {
@@ -185,6 +186,14 @@ export default function LoginScreen() {
                       <Text style={styles.infoLabel}>ID:</Text>
                       <Text style={styles.infoValue}>{googleUserInfo.id}</Text>
                     </View>
+                    {googleUserInfo.cookie && (
+                      <View style={styles.infoRow}>
+                        <Text style={styles.infoLabel}>Cookie:</Text>
+                        <Text style={styles.infoValue} numberOfLines={2} ellipsizeMode="tail">
+                          {googleUserInfo.cookie}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                 </View>
               )}
