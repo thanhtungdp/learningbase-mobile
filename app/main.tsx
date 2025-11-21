@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { WebViewNavBar } from '@/components/WebViewNavBar';
 import { SkeletonLoading } from '@/components/SkeletonLoading';
 import { authService } from '@/services/authService';
-import { Compass, LogOut, Info, Shield, Settings } from 'lucide-react-native';
+import { Compass, LogOut, Info, Plus, UserCircle } from 'lucide-react-native';
 
 const BASE_URL = 'https://learningbases.com';
 
@@ -88,20 +88,24 @@ export default function MainScreen() {
     Alert.alert('Info', 'LearningBases - Learning for Growth\nVersion 1.0.0');
   };
 
-  const handlePrivacy = () => {
-    setShowOptionsMenu(false);
-    Alert.alert('Privacy', 'Privacy policy coming soon');
-  };
-
-  const handleSettings = () => {
-    setShowOptionsMenu(false);
-    Alert.alert('Settings', 'Settings coming soon');
-  };
-
   const handleExplore = () => {
     setShowOptionsMenu(false);
     if (webViewRef.current) {
       webViewRef.current.injectJavaScript(`window.location.href = '${BASE_URL}/explore';`);
+    }
+  };
+
+  const handleCreateCommunity = () => {
+    setShowOptionsMenu(false);
+    if (webViewRef.current) {
+      webViewRef.current.injectJavaScript(`window.location.href = '${BASE_URL}/select-organization';`);
+    }
+  };
+
+  const handleProfileSettings = () => {
+    setShowOptionsMenu(false);
+    if (webViewRef.current) {
+      webViewRef.current.injectJavaScript(`window.location.href = '${BASE_URL}/app/account/settings';`);
     }
   };
 
@@ -178,19 +182,19 @@ export default function MainScreen() {
               <Text style={styles.optionText}>Explore</Text>
             </TouchableOpacity>
             <View style={styles.separator} />
+            <TouchableOpacity style={styles.optionItem} onPress={handleCreateCommunity}>
+              <Plus size={20} color="#1f2937" />
+              <Text style={styles.optionText}>Create Community</Text>
+            </TouchableOpacity>
+            <View style={styles.separator} />
+            <TouchableOpacity style={styles.optionItem} onPress={handleProfileSettings}>
+              <UserCircle size={20} color="#1f2937" />
+              <Text style={styles.optionText}>Profile Settings</Text>
+            </TouchableOpacity>
+            <View style={styles.separator} />
             <TouchableOpacity style={styles.optionItem} onPress={handleInfo}>
               <Info size={20} color="#1f2937" />
               <Text style={styles.optionText}>Info</Text>
-            </TouchableOpacity>
-            <View style={styles.separator} />
-            <TouchableOpacity style={styles.optionItem} onPress={handlePrivacy}>
-              <Shield size={20} color="#1f2937" />
-              <Text style={styles.optionText}>Privacy</Text>
-            </TouchableOpacity>
-            <View style={styles.separator} />
-            <TouchableOpacity style={styles.optionItem} onPress={handleSettings}>
-              <Settings size={20} color="#1f2937" />
-              <Text style={styles.optionText}>Settings</Text>
             </TouchableOpacity>
             <View style={styles.separator} />
             <TouchableOpacity style={styles.optionItem} onPress={handleLogout}>
