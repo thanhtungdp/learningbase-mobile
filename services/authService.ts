@@ -163,10 +163,10 @@ export const authService = {
   async loginWithGoogle(): Promise<GoogleUserInfo | null> {
     try {
       const GOOGLE_CLIENT_ID = '39223075628-b8hsm0a8rgcp4c84ac3qspgkd1fffpc5.apps.googleusercontent.com';
-      const redirectUri = 'https://learningbases.com/api/auth/google/callback';
+      const redirectUri = 'learningbases://auth/google/callback';
 
       const state = btoa(JSON.stringify({
-        returnTo: 'mobile-app-close',
+        returnTo: 'mobile-app',
         timestamp: Date.now()
       }));
 
