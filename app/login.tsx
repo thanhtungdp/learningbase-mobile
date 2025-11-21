@@ -1,10 +1,21 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Modal } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { authService } from '@/services/authService';
+import * as WebBrowser from 'expo-web-browser';
+import { X } from 'lucide-react-native';
+
+WebBrowser.maybeCompleteAuthSession();
+
+interface GoogleUserInfo {
+  id: string;
+  email: string;
+  name: string;
+  picture: string;
+}
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -12,6 +23,9 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [showGoogleInfo, setShowGoogleInfo] = useState(false);
+  const [googleUserInfo, setGoogleUserInfo] = useState<GoogleUserInfo | null>(null);
 
   const handleLogin = async () => {
     if (!usernameOrEmail || !password) {
@@ -30,6 +44,29 @@ export default function LoginScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleLogin = async () => {
+    setError('');
+    setGoogleLoading(true);
+
+    try {
+      const result = await authService.loginWithGoogle();
+
+      if (result) {
+        setGoogleUserInfo(result);
+        setShowGoogleInfo(true);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Google login failed. Please try again.');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const closeGoogleInfoModal = () => {
+    setShowGoogleInfo(false);
+    setGoogleUserInfo(null);
   };
 
   return (
@@ -83,6 +120,26 @@ export default function LoginScreen() {
               disabled={loading}
             />
 
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>OR</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <TouchableOpacity
+              style={styles.googleButton}
+              onPress={handleGoogleLogin}
+              disabled={googleLoading}
+            >
+              <Image
+                source={{ uri: 'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg' }}
+                style={styles.googleIcon}
+              />
+              <Text style={styles.googleButtonText}>
+                {googleLoading ? 'Signing in...' : 'Continue with Google'}
+              </Text>
+            </TouchableOpacity>
+
             <View style={styles.signupPrompt}>
               <Text style={styles.signupPromptText}>Don't have an account? </Text>
               <TouchableOpacity onPress={() => router.push('/signup')}>
@@ -91,6 +148,56 @@ export default function LoginScreen() {
             </View>
           </View>
         </View>
+
+        <Modal
+          visible={showGoogleInfo}
+          transparent
+          animationType="fade"
+          onRequestClose={closeGoogleInfoModal}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={closeGoogleInfoModal}
+              >
+                <X size={24} color="#6b7280" />
+              </TouchableOpacity>
+
+              <Text style={styles.modalTitle}>Google Account Info</Text>
+
+              {googleUserInfo && (
+                <View style={styles.userInfoContainer}>
+                  <Image
+                    source={{ uri: googleUserInfo.picture }}
+                    style={styles.profilePicture}
+                  />
+                  <View style={styles.userDetails}>
+                    <View style={styles.infoRow}>
+                      <Text style={styles.infoLabel}>Name:</Text>
+                      <Text style={styles.infoValue}>{googleUserInfo.name}</Text>
+                    </View>
+                    <View style={styles.infoRow}>
+                      <Text style={styles.infoLabel}>Email:</Text>
+                      <Text style={styles.infoValue}>{googleUserInfo.email}</Text>
+                    </View>
+                    <View style={styles.infoRow}>
+                      <Text style={styles.infoLabel}>ID:</Text>
+                      <Text style={styles.infoValue}>{googleUserInfo.id}</Text>
+                    </View>
+                  </View>
+                </View>
+              )}
+
+              <TouchableOpacity
+                style={styles.closeModalButton}
+                onPress={closeGoogleInfoModal}
+              >
+                <Text style={styles.closeModalButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
     </LinearGradient>
   );
 }
@@ -160,6 +267,116 @@ const styles = StyleSheet.create({
   signupLink: {
     fontSize: 14,
     color: '#2266E1',
+    fontWeight: '600',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#e5e7eb',
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  googleIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 12,
+  },
+  googleButtonText: {
+    fontSize: 16,
+    color: '#1f2937',
+    fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    zIndex: 1,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1f2937',
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  userInfoContainer: {
+    alignItems: 'center',
+  },
+  profilePicture: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 24,
+  },
+  userDetails: {
+    width: '100%',
+  },
+  infoRow: {
+    marginBottom: 16,
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 4,
+  },
+  infoValue: {
+    fontSize: 16,
+    color: '#1f2937',
+    fontWeight: '500',
+  },
+  closeModalButton: {
+    backgroundColor: '#2266E1',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 24,
+  },
+  closeModalButtonText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: '600',
   },
 });

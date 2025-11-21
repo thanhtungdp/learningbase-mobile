@@ -1,4 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 
 const LOGIN_API_URL = 'https://learningbases.com/api/login';
 const REGISTER_API_URL = 'https://learningbases.com/api/register';
@@ -29,6 +31,13 @@ export interface User {
 export interface AuthResponse {
   user: User;
   cookie: string;
+}
+
+export interface GoogleUserInfo {
+  id: string;
+  email: string;
+  name: string;
+  picture: string;
 }
 
 const STORAGE_KEYS = {
@@ -147,6 +156,50 @@ export const authService = {
       return await AsyncStorage.getItem(STORAGE_KEYS.LAST_URL);
     } catch {
       return null;
+    }
+  },
+
+  async loginWithGoogle(): Promise<GoogleUserInfo | null> {
+    try {
+      const GOOGLE_CLIENT_ID = '1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com';
+      const redirectUri = Linking.createURL('auth/google');
+
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+        `client_id=${GOOGLE_CLIENT_ID}&` +
+        `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+        `response_type=token&` +
+        `scope=${encodeURIComponent('openid email profile')}`;
+
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
+
+      if (result.type === 'success' && result.url) {
+        const url = result.url;
+        const accessTokenMatch = url.match(/access_token=([^&]+)/);
+        const accessToken = accessTokenMatch ? accessTokenMatch[1] : null;
+
+        if (accessToken) {
+          const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+
+          if (userInfoResponse.ok) {
+            const userInfo = await userInfoResponse.json();
+            return {
+              id: userInfo.id,
+              email: userInfo.email,
+              name: userInfo.name,
+              picture: userInfo.picture,
+            };
+          }
+        }
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Google login error:', error);
+      throw new Error('Failed to login with Google');
     }
   },
 };
