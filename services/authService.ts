@@ -168,7 +168,7 @@ export const authService = {
         `client_id=${GOOGLE_CLIENT_ID}&` +
         `redirect_uri=${encodeURIComponent(redirectUri)}&` +
         `response_type=token&` +
-        `scope=${encodeURIComponent('openid email profile')}`;
+        `scope=${encodeURIComponent('email profile')}`;
 
       const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
 
