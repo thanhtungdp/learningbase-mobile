@@ -161,8 +161,8 @@ export const authService = {
 
   async loginWithGoogle(): Promise<GoogleUserInfo | null> {
     try {
-      const GOOGLE_CLIENT_ID = '1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com';
-      const redirectUri = Linking.createURL('auth/google');
+      const GOOGLE_CLIENT_ID = '39223075628-b8hsm0a8rgcp4c84ac3qspgkd1fffpc5.apps.googleusercontent.com';
+      const redirectUri = 'https://learningbases.com/api/auth/google/callback';
 
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
         `client_id=${GOOGLE_CLIENT_ID}&` +
