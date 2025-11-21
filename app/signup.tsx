@@ -78,21 +78,26 @@ export default function SignupScreen() {
           </View>
 
           <View style={styles.form}>
-            <Input
-              label="First Name"
-              placeholder="Enter your first name"
-              value={firstName}
-              onChangeText={setFirstName}
-              autoCapitalize="words"
-            />
-
-            <Input
-              label="Last Name"
-              placeholder="Enter your last name"
-              value={lastName}
-              onChangeText={setLastName}
-              autoCapitalize="words"
-            />
+            <View style={styles.nameRow}>
+              <View style={styles.nameInput}>
+                <Input
+                  label="First Name"
+                  placeholder="First name"
+                  value={firstName}
+                  onChangeText={setFirstName}
+                  autoCapitalize="words"
+                />
+              </View>
+              <View style={styles.nameInput}>
+                <Input
+                  label="Last Name"
+                  placeholder="Last name"
+                  value={lastName}
+                  onChangeText={setLastName}
+                  autoCapitalize="words"
+                />
+              </View>
+            </View>
 
             <Input
               label="Username"
@@ -216,5 +221,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#2266E1',
     fontWeight: '600',
+  },
+  nameRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  nameInput: {
+    flex: 1,
   },
 });
