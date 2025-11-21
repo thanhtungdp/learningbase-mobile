@@ -16,9 +16,15 @@ export default function MainScreen() {
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [initialUrl, setInitialUrl] = useState<string>(BASE_URL);
   const [isLoading, setIsLoading] = useState(true);
+  const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     loadInitialData();
+    return () => {
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
+    };
   }, []);
 
   const loadInitialData = async () => {
@@ -114,8 +120,17 @@ export default function MainScreen() {
         ref={webViewRef}
         source={{ uri: initialUrl }}
         style={styles.webview}
-        onLoadStart={() => setIsLoading(true)}
-        onLoadEnd={() => setIsLoading(false)}
+        onLoadStart={() => {
+          if (loadingTimeoutRef.current) {
+            clearTimeout(loadingTimeoutRef.current);
+          }
+          setIsLoading(true);
+        }}
+        onLoadEnd={() => {
+          loadingTimeoutRef.current = setTimeout(() => {
+            setIsLoading(false);
+          }, 1300);
+        }}
         onNavigationStateChange={(navState) => {
           setCanGoBack(navState.canGoBack);
           if (navState.url) {
