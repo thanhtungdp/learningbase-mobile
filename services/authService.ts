@@ -1,0 +1,108 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const API_URL = 'https://learningbases.com/api/login';
+const ORGANIZATION_ID = 'fb5f5a11-9cd2-43a8-964e-240c9ff9ea22';
+
+export interface LoginCredentials {
+  usernameOrEmail: string;
+  password: string;
+}
+
+export interface User {
+  id: string;
+  username: string | null;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+}
+
+export interface AuthResponse {
+  user: User;
+  cookie: string;
+}
+
+const STORAGE_KEYS = {
+  USER: '@learningbases/user',
+  COOKIE: '@learningbases/cookie',
+  LAST_URL: '@learningbases/last_url',
+};
+
+export const authService = {
+  async login(credentials: LoginCredentials): Promise<AuthResponse> {
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'accept': '*/*',
+          'accept-language': 'en-US,en;q=0.9',
+          'content-type': 'application/json',
+          'origin': 'https://learningbases.com',
+          'referer': 'https://learningbases.com/auth',
+          'x-organization-id': ORGANIZATION_ID,
+        },
+        body: JSON.stringify(credentials),
+      });
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const user: User = await response.json();
+
+      const setCookieHeader = response.headers.get('set-cookie');
+      const cookie = setCookieHeader || '';
+
+      await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+      await AsyncStorage.setItem(STORAGE_KEYS.COOKIE, cookie);
+
+      return { user, cookie };
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async logout(): Promise<void> {
+    await AsyncStorage.removeItem(STORAGE_KEYS.USER);
+    await AsyncStorage.removeItem(STORAGE_KEYS.COOKIE);
+    await AsyncStorage.removeItem(STORAGE_KEYS.LAST_URL);
+  },
+
+  async getStoredUser(): Promise<User | null> {
+    try {
+      const userJson = await AsyncStorage.getItem(STORAGE_KEYS.USER);
+      return userJson ? JSON.parse(userJson) : null;
+    } catch {
+      return null;
+    }
+  },
+
+  async getStoredCookie(): Promise<string | null> {
+    try {
+      return await AsyncStorage.getItem(STORAGE_KEYS.COOKIE);
+    } catch {
+      return null;
+    }
+  },
+
+  async isAuthenticated(): Promise<boolean> {
+    const user = await this.getStoredUser();
+    return user !== null;
+  },
+
+  async saveLastVisitedUrl(url: string): Promise<void> {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.LAST_URL, url);
+    } catch {
+      // Ignore error
+    }
+  },
+
+  async getLastVisitedUrl(): Promise<string | null> {
+    try {
+      return await AsyncStorage.getItem(STORAGE_KEYS.LAST_URL);
+    } catch {
+      return null;
+    }
+  },
+};

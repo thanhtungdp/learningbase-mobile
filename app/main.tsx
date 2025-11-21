@@ -1,0 +1,205 @@
+import React, { useRef, useState, useEffect } from 'react';
+import { View, StyleSheet, ActivityIndicator, Alert, Modal, TouchableOpacity, Text } from 'react-native';
+import { WebView } from 'react-native-webview';
+import { useRouter } from 'expo-router';
+import { WebViewNavBar } from '@/components/WebViewNavBar';
+import { authService } from '@/services/authService';
+
+const BASE_URL = 'https://learningbases.com';
+
+export default function MainScreen() {
+  const router = useRouter();
+  const webViewRef = useRef<WebView>(null);
+  const [canGoBack, setCanGoBack] = useState(false);
+  const [cookie, setCookie] = useState<string | null>(null);
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [initialUrl, setInitialUrl] = useState<string>(BASE_URL);
+
+  useEffect(() => {
+    loadInitialData();
+  }, []);
+
+  const loadInitialData = async () => {
+    const storedCookie = await authService.getStoredCookie();
+    setCookie(storedCookie);
+
+    const lastUrl = await authService.getLastVisitedUrl();
+    if (lastUrl) {
+      setInitialUrl(lastUrl);
+    }
+  };
+
+  const handleGoBack = () => {
+    if (webViewRef.current && canGoBack) {
+      webViewRef.current.goBack();
+    }
+  };
+
+  const handleHome = () => {
+    if (webViewRef.current) {
+      webViewRef.current.injectJavaScript(`window.location.href = '${BASE_URL}';`);
+    }
+  };
+
+  const handleRefresh = () => {
+    if (webViewRef.current) {
+      webViewRef.current.reload();
+    }
+  };
+
+  const handleOptionsPress = () => {
+    setShowOptionsMenu(true);
+  };
+
+  const handleLogout = () => {
+    setShowOptionsMenu(false);
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            await authService.logout();
+            router.replace('/login');
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const handleInfo = () => {
+    setShowOptionsMenu(false);
+    Alert.alert('Info', 'LearningBases - Learning for Growth\nVersion 1.0.0');
+  };
+
+  const handlePrivacy = () => {
+    setShowOptionsMenu(false);
+    Alert.alert('Privacy', 'Privacy policy coming soon');
+  };
+
+  const handleSettings = () => {
+    setShowOptionsMenu(false);
+    Alert.alert('Settings', 'Settings coming soon');
+  };
+
+  const injectedJavaScript = cookie
+    ? `
+      (function() {
+        document.cookie = "${cookie}";
+      })();
+      true;
+    `
+    : '';
+
+  return (
+    <View style={styles.container}>
+      <WebViewNavBar
+        canGoBack={canGoBack}
+        onGoBack={handleGoBack}
+        onHome={handleHome}
+        onRefresh={handleRefresh}
+        onOptionsPress={handleOptionsPress}
+      />
+      <WebView
+        ref={webViewRef}
+        source={{ uri: initialUrl }}
+        style={styles.webview}
+        onNavigationStateChange={(navState) => {
+          setCanGoBack(navState.canGoBack);
+          if (navState.url) {
+            authService.saveLastVisitedUrl(navState.url);
+          }
+        }}
+        injectedJavaScriptBeforeContentLoaded={injectedJavaScript}
+        sharedCookiesEnabled={true}
+        thirdPartyCookiesEnabled={true}
+        cacheEnabled={true}
+        cacheMode="LOAD_CACHE_ELSE_NETWORK"
+        domStorageEnabled={true}
+        javaScriptEnabled={true}
+      />
+
+      <Modal
+        visible={showOptionsMenu}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowOptionsMenu(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowOptionsMenu(false)}
+        >
+          <View style={styles.optionsMenu}>
+            <TouchableOpacity style={styles.optionItem} onPress={handleLogout}>
+              <Text style={styles.optionText}>Logout</Text>
+            </TouchableOpacity>
+            <View style={styles.separator} />
+            <TouchableOpacity style={styles.optionItem} onPress={handleInfo}>
+              <Text style={styles.optionText}>Info</Text>
+            </TouchableOpacity>
+            <View style={styles.separator} />
+            <TouchableOpacity style={styles.optionItem} onPress={handlePrivacy}>
+              <Text style={styles.optionText}>Privacy</Text>
+            </TouchableOpacity>
+            <View style={styles.separator} />
+            <TouchableOpacity style={styles.optionItem} onPress={handleSettings}>
+              <Text style={styles.optionText}>Settings</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  webview: {
+    flex: 1,
+    paddingBottom: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-end',
+    paddingTop: 60,
+    paddingRight: 16,
+  },
+  optionsMenu: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    minWidth: 180,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  optionItem: {
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+  },
+  optionText: {
+    fontSize: 16,
+    color: '#1f2937',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#e5e7eb',
+  },
+});
