@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { WebViewNavBar } from '@/components/WebViewNavBar';
 import { SkeletonLoading } from '@/components/SkeletonLoading';
 import { authService } from '@/services/authService';
+import { Compass, LogOut, Info, Shield, Settings } from 'lucide-react-native';
 
 const BASE_URL = 'https://learningbases.com';
 
@@ -97,6 +98,13 @@ export default function MainScreen() {
     Alert.alert('Settings', 'Settings coming soon');
   };
 
+  const handleExplore = () => {
+    setShowOptionsMenu(false);
+    if (webViewRef.current) {
+      webViewRef.current.injectJavaScript(`window.location.href = '${BASE_URL}/explore';`);
+    }
+  };
+
   const injectedJavaScript = cookie
     ? `
       (function() {
@@ -165,20 +173,29 @@ export default function MainScreen() {
           onPress={() => setShowOptionsMenu(false)}
         >
           <View style={styles.optionsMenu}>
-            <TouchableOpacity style={styles.optionItem} onPress={handleLogout}>
-              <Text style={styles.optionText}>Logout</Text>
+            <TouchableOpacity style={styles.optionItem} onPress={handleExplore}>
+              <Compass size={20} color="#1f2937" />
+              <Text style={styles.optionText}>Explore</Text>
             </TouchableOpacity>
             <View style={styles.separator} />
             <TouchableOpacity style={styles.optionItem} onPress={handleInfo}>
+              <Info size={20} color="#1f2937" />
               <Text style={styles.optionText}>Info</Text>
             </TouchableOpacity>
             <View style={styles.separator} />
             <TouchableOpacity style={styles.optionItem} onPress={handlePrivacy}>
+              <Shield size={20} color="#1f2937" />
               <Text style={styles.optionText}>Privacy</Text>
             </TouchableOpacity>
             <View style={styles.separator} />
             <TouchableOpacity style={styles.optionItem} onPress={handleSettings}>
+              <Settings size={20} color="#1f2937" />
               <Text style={styles.optionText}>Settings</Text>
+            </TouchableOpacity>
+            <View style={styles.separator} />
+            <TouchableOpacity style={styles.optionItem} onPress={handleLogout}>
+              <LogOut size={20} color="#dc2626" />
+              <Text style={[styles.optionText, styles.logoutText]}>Logout</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -231,12 +248,18 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   optionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 20,
+    gap: 12,
   },
   optionText: {
     fontSize: 16,
     color: '#1f2937',
+  },
+  logoutText: {
+    color: '#dc2626',
   },
   separator: {
     height: 1,
