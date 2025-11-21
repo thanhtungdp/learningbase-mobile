@@ -1,9 +1,9 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, StyleSheet, Alert, Modal, TouchableOpacity, Text, Dimensions } from 'react-native';
-import SkeletonPlaceholder from 'react-native-reanimated-skeleton';
+import { View, StyleSheet, Alert, Modal, TouchableOpacity, Text } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useRouter } from 'expo-router';
 import { WebViewNavBar } from '@/components/WebViewNavBar';
+import { SkeletonLoading } from '@/components/SkeletonLoading';
 import { authService } from '@/services/authService';
 
 const BASE_URL = 'https://learningbases.com';
@@ -133,22 +133,7 @@ export default function MainScreen() {
 
         {isLoading && (
           <View style={styles.loadingOverlay}>
-            <SkeletonPlaceholder borderRadius={4}>
-              <SkeletonPlaceholder.Item padding={20}>
-                <SkeletonPlaceholder.Item width="100%" height={40} marginBottom={20} />
-                <SkeletonPlaceholder.Item width="100%" height={200} marginBottom={20} />
-                <SkeletonPlaceholder.Item flexDirection="row" justifyContent="space-between" marginBottom={20}>
-                  <SkeletonPlaceholder.Item width="48%" height={120} />
-                  <SkeletonPlaceholder.Item width="48%" height={120} />
-                </SkeletonPlaceholder.Item>
-                <SkeletonPlaceholder.Item width="100%" height={150} marginBottom={20} />
-                <SkeletonPlaceholder.Item flexDirection="row" justifyContent="space-between">
-                  <SkeletonPlaceholder.Item width="30%" height={100} />
-                  <SkeletonPlaceholder.Item width="30%" height={100} />
-                  <SkeletonPlaceholder.Item width="30%" height={100} />
-                </SkeletonPlaceholder.Item>
-              </SkeletonPlaceholder.Item>
-            </SkeletonPlaceholder>
+            <SkeletonLoading />
           </View>
         )}
       </View>
