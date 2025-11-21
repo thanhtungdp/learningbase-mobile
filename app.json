@@ -13,16 +13,28 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "privacy": "public",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.learningbases.app"
+      "bundleIdentifier": "com.learningbases.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to capture photos for your learning content.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select images."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.learningbases.app"
+      "package": "com.learningbases.app",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "bundler": "metro",
