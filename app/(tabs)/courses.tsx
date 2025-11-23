@@ -116,12 +116,24 @@ export default function CoursesScreen() {
       ? item.thumbnailUrl
       : `https://learningbases.com${item.thumbnailUrl}`;
 
+    const showProgress = item.isEnrolled && item.progress && item.progress > 0;
+    const progressPercentage = item.progress || 0;
+
     return (
       <TouchableOpacity
         style={styles.courseCard}
         onPress={() => router.push(`/course/${item.slug}`)}
       >
-        <Image source={{ uri: imageUrl }} style={styles.courseThumbnail} />
+        <View style={styles.thumbnailContainer}>
+          <Image source={{ uri: imageUrl }} style={styles.courseThumbnail} />
+          {showProgress && (
+            <View style={styles.progressCircleContainer}>
+              <View style={styles.progressCircle}>
+                <Text style={styles.progressText}>{progressPercentage}%</Text>
+              </View>
+            </View>
+          )}
+        </View>
         <View style={styles.courseContent}>
           <Text style={styles.courseTitle} numberOfLines={2}>
             {item.title}
@@ -269,10 +281,33 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
+  thumbnailContainer: {
+    position: 'relative',
+    width: 120,
+    height: 100,
+  },
   courseThumbnail: {
     width: 120,
     height: 100,
     backgroundColor: '#e5e7eb',
+  },
+  progressCircleContainer: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+  },
+  progressCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  progressText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#fff',
   },
   courseContent: {
     flex: 1,
