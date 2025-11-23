@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebViewNavBar } from '@/components/WebViewNavBar';
+import { SkeletonLoading } from '@/components/SkeletonLoading';
 
 export default function LearnScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -105,7 +106,7 @@ export default function LearnScreen() {
 
       {loading && (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#2563eb" />
+        <SkeletonLoading/>
         </View>
       )}
     </SafeAreaView>
