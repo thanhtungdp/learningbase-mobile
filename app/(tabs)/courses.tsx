@@ -192,32 +192,36 @@ export default function CoursesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#f9fafb',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: '#f9fafb',
   },
   header: {
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 12,
-    backgroundColor: '#000',
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#fff',
+    color: '#111827',
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#71717a',
+    color: '#6b7280',
   },
   categoriesContainer: {
-    backgroundColor: '#000',
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
     paddingVertical: 12,
   },
   categoriesList: {
@@ -230,14 +234,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#27272a',
+    backgroundColor: '#f3f4f6',
     gap: 6,
   },
   categoryChipActive: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
+    backgroundColor: '#2563eb',
   },
   categoryDot: {
     width: 8,
@@ -247,7 +248,7 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#a1a1aa',
+    color: '#374151',
   },
   categoryTextActive: {
     color: '#fff',
@@ -258,36 +259,42 @@ const styles = StyleSheet.create({
   },
   courseCard: {
     flexDirection: 'row',
-    backgroundColor: 'transparent',
+    backgroundColor: '#fff',
     marginBottom: 16,
+    borderRadius: 12,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
   courseThumbnail: {
     width: 120,
     height: 100,
     backgroundColor: '#e5e7eb',
-    borderRadius: 8,
   },
   courseContent: {
     flex: 1,
     paddingLeft: 16,
+    paddingRight: 12,
     justifyContent: 'center',
     gap: 4,
   },
   courseTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#fff',
+    color: '#111827',
     marginBottom: 2,
   },
   instructorName: {
     fontSize: 13,
-    color: '#a1a1aa',
+    color: '#6b7280',
     marginBottom: 4,
   },
   courseType: {
     fontSize: 13,
-    color: '#71717a',
+    color: '#6b7280',
   },
   errorText: {
     fontSize: 16,
