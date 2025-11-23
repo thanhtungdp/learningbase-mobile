@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BASE_URL = 'https://learningbases.com/api';
-const ORGANIZATION_ID = 'fb5f5a11-9cd2-43a8-964e-240c9ff9ea22';
+const ORGANIZATION_ID = 'd4e9122a-10bc-4050-ba11-7d05b7a87d8e';
 
 export interface CourseCategory {
   id: string;
