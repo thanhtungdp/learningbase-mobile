@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    marginTop: -160
+    marginTop: -60
   },
   webview: {
     flex: 1,
