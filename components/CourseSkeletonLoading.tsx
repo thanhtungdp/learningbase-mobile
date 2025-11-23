@@ -42,13 +42,9 @@ export const CourseSkeletonLoading = () => {
     <View style={styles.courseCard}>
       <Animated.View style={[styles.thumbnail, { opacity }]} />
       <View style={styles.courseContent}>
-        <Animated.View style={[styles.titleLine, { opacity, width: '80%' }]} />
-        <Animated.View style={[styles.subtitleLine, { opacity, width: '40%' }]} />
-        <View style={styles.statsRow}>
-          <Animated.View style={[styles.statBox, { opacity }]} />
-          <Animated.View style={[styles.statBox, { opacity }]} />
-          <Animated.View style={[styles.statBox, { opacity }]} />
-        </View>
+        <Animated.View style={[styles.titleLine, { opacity, width: '90%' }]} />
+        <Animated.View style={[styles.subtitleLine, { opacity, width: '50%' }]} />
+        <Animated.View style={[styles.typeLine, { opacity, width: '60%' }]} />
       </View>
     </View>
   );
@@ -63,7 +59,7 @@ export const CourseSkeletonLoading = () => {
       <CategorySkeleton />
 
       <View style={styles.coursesList}>
-        {[1, 2, 3].map((i) => (
+        {[1, 2, 3, 4, 5].map((i) => (
           <CourseCardSkeleton key={i} />
         ))}
       </View>
@@ -74,27 +70,25 @@ export const CourseSkeletonLoading = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#000',
   },
   header: {
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    backgroundColor: '#000',
   },
   headerTitle: {
     height: 32,
     width: 150,
-    backgroundColor: '#e5e7eb',
+    backgroundColor: '#27272a',
     borderRadius: 6,
     marginBottom: 8,
   },
   headerSubtitle: {
     height: 16,
     width: 180,
-    backgroundColor: '#e5e7eb',
+    backgroundColor: '#27272a',
     borderRadius: 4,
   },
   categoryContainer: {
@@ -102,58 +96,47 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     gap: 8,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    backgroundColor: '#000',
   },
   categoryChip: {
     height: 32,
     width: 90,
-    backgroundColor: '#e5e7eb',
+    backgroundColor: '#27272a',
     borderRadius: 16,
   },
   coursesList: {
     padding: 20,
-    gap: 16,
+    paddingBottom: 100,
   },
   courseCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    flexDirection: 'row',
+    marginBottom: 16,
   },
   thumbnail: {
-    width: '100%',
-    height: 180,
-    backgroundColor: '#e5e7eb',
+    width: 120,
+    height: 100,
+    backgroundColor: '#27272a',
+    borderRadius: 8,
   },
   courseContent: {
-    padding: 16,
+    flex: 1,
+    paddingLeft: 16,
+    justifyContent: 'center',
+    gap: 6,
   },
   titleLine: {
-    height: 20,
-    backgroundColor: '#e5e7eb',
+    height: 16,
+    backgroundColor: '#27272a',
     borderRadius: 4,
-    marginBottom: 8,
   },
   subtitleLine: {
-    height: 16,
-    backgroundColor: '#e5e7eb',
+    height: 13,
+    backgroundColor: '#27272a',
     borderRadius: 4,
-    marginBottom: 12,
   },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  statBox: {
-    height: 14,
-    width: 60,
-    backgroundColor: '#e5e7eb',
+  typeLine: {
+    height: 13,
+    backgroundColor: '#27272a',
     borderRadius: 4,
   },
 });

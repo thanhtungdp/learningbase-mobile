@@ -27,6 +27,7 @@ export interface Course {
   title: string;
   description: string;
   categoryId: string;
+  categoryName?: string;
   instructorId: string;
   thumbnailUrl: string;
   estimatedDuration: number;

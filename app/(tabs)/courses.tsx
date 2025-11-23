@@ -40,8 +40,15 @@ export default function CoursesScreen() {
         courseService.getCategories(),
         courseService.getCourses(),
       ]);
+
+      const categoryMap = new Map(categoriesData.map(cat => [cat.id, cat.name]));
+      const coursesWithCategory = coursesData.map(course => ({
+        ...course,
+        categoryName: categoryMap.get(course.categoryId) || 'General',
+      }));
+
       setCategories(categoriesData);
-      setCourses(coursesData);
+      setCourses(coursesWithCategory);
     } catch (err) {
       setError('Failed to load courses');
       console.error(err);
@@ -122,30 +129,9 @@ export default function CoursesScreen() {
           <Text style={styles.instructorName} numberOfLines={1}>
             {item.instructor.firstName} {item.instructor.lastName}
           </Text>
-          <View style={styles.courseStats}>
-            <View style={styles.statItem}>
-              <BookOpen size={14} color="#6b7280" />
-              <Text style={styles.statText}>{item.lessonsCount} lessons</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Clock size={14} color="#6b7280" />
-              <Text style={styles.statText}>{item.estimatedDuration} min</Text>
-            </View>
-            <View style={styles.statItem}>
-              <BarChart size={14} color={getDifficultyColor(item.difficulty)} />
-              <Text style={[styles.statText, { color: getDifficultyColor(item.difficulty) }]}>
-                {item.difficulty}
-              </Text>
-            </View>
-          </View>
-          {item.isEnrolled && item.progress !== undefined && (
-            <View style={styles.progressContainer}>
-              <View style={styles.progressBar}>
-                <View style={[styles.progressFill, { width: `${item.progress}%` }]} />
-              </View>
-              <Text style={styles.progressText}>{item.progress}%</Text>
-            </View>
-          )}
+          <Text style={styles.courseType}>
+            {item.lessonsCount > 1 ? 'Series' : 'Class'} • {item.categoryName || 'General'}
+          </Text>
         </View>
       </TouchableOpacity>
     );
@@ -206,36 +192,32 @@ export default function CoursesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#000',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#000',
   },
   header: {
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    backgroundColor: '#000',
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#111827',
+    color: '#fff',
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#71717a',
   },
   categoriesContainer: {
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    backgroundColor: '#000',
     paddingVertical: 12,
   },
   categoriesList: {
@@ -248,11 +230,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#27272a',
     gap: 6,
   },
   categoryChipActive: {
-    backgroundColor: '#2563eb',
+    backgroundColor: '#3b82f6',
+    borderColor: '#3b82f6',
   },
   categoryDot: {
     width: 8,
@@ -262,83 +247,47 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: '#a1a1aa',
   },
   categoryTextActive: {
     color: '#fff',
   },
   coursesList: {
     padding: 20,
-    gap: 16,
+    paddingBottom: 100,
   },
   courseCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    flexDirection: 'row',
+    backgroundColor: 'transparent',
+    marginBottom: 16,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   courseThumbnail: {
-    width: '100%',
-    height: 180,
+    width: 120,
+    height: 100,
     backgroundColor: '#e5e7eb',
+    borderRadius: 8,
   },
   courseContent: {
-    padding: 16,
-  },
-  courseTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 6,
-  },
-  instructorName: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 12,
-  },
-  courseStats: {
-    flexDirection: 'row',
-    gap: 16,
-    marginBottom: 12,
-  },
-  statItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flex: 1,
+    paddingLeft: 16,
+    justifyContent: 'center',
     gap: 4,
   },
-  statText: {
-    fontSize: 12,
-    color: '#6b7280',
-    textTransform: 'capitalize',
+  courseTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 2,
   },
-  progressContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 4,
+  instructorName: {
+    fontSize: 13,
+    color: '#a1a1aa',
+    marginBottom: 4,
   },
-  progressBar: {
-    flex: 1,
-    height: 6,
-    backgroundColor: '#e5e7eb',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#10b981',
-    borderRadius: 3,
-  },
-  progressText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#10b981',
-    minWidth: 40,
-    textAlign: 'right',
+  courseType: {
+    fontSize: 13,
+    color: '#71717a',
   },
   errorText: {
     fontSize: 16,
