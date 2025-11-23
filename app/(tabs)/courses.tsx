@@ -9,10 +9,11 @@ import {
   Image,
   ScrollView,
   SafeAreaView,
+  RefreshControl,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { courseService, CourseCategory, Course } from '@/services/courseService';
-import { BookOpen, Clock, BarChart } from 'lucide-react-native';
+import { BookOpen, Clock, BarChart, Globe } from 'lucide-react-native';
 
 export default function CoursesScreen() {
   const router = useRouter();
@@ -20,15 +21,21 @@ export default function CoursesScreen() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = async () => {
+  const loadData = async (isRefresh = false) => {
     try {
-      setLoading(true);
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      setError('');
       const [categoriesData, coursesData] = await Promise.all([
         courseService.getCategories(),
         courseService.getCourses(),
@@ -39,8 +46,16 @@ export default function CoursesScreen() {
       setError('Failed to load courses');
       console.error(err);
     } finally {
-      setLoading(false);
+      if (isRefresh) {
+        setRefreshing(false);
+      } else {
+        setLoading(false);
+      }
     }
+  };
+
+  const onRefresh = () => {
+    loadData(true);
   };
 
   const filteredCourses = selectedCategory
@@ -60,25 +75,34 @@ export default function CoursesScreen() {
     }
   };
 
-  const renderCategoryItem = ({ item }: { item: CourseCategory }) => (
-    <TouchableOpacity
-      style={[
-        styles.categoryChip,
-        selectedCategory === item.id && styles.categoryChipActive,
-      ]}
-      onPress={() => setSelectedCategory(selectedCategory === item.id ? null : item.id)}
-    >
-      <View style={[styles.categoryDot, { backgroundColor: item.color }]} />
-      <Text
+  const renderCategoryItem = ({ item }: { item: CourseCategory | { id: 'all'; name: string; color: string } }) => {
+    const isAll = item.id === 'all';
+    const isActive = isAll ? selectedCategory === null : selectedCategory === item.id;
+
+    return (
+      <TouchableOpacity
         style={[
-          styles.categoryText,
-          selectedCategory === item.id && styles.categoryTextActive,
+          styles.categoryChip,
+          isActive && styles.categoryChipActive,
         ]}
+        onPress={() => setSelectedCategory(isAll ? null : (isActive ? null : item.id))}
       >
-        {item.name}
-      </Text>
-    </TouchableOpacity>
-  );
+        {isAll ? (
+          <Globe size={14} color={isActive ? '#fff' : '#6b7280'} />
+        ) : (
+          <View style={[styles.categoryDot, { backgroundColor: item.color }]} />
+        )}
+        <Text
+          style={[
+            styles.categoryText,
+            isActive && styles.categoryTextActive,
+          ]}
+        >
+          {item.name}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   const renderCourseItem = ({ item }: { item: Course }) => {
     const imageUrl = item.thumbnailUrl.startsWith('http')
@@ -156,7 +180,7 @@ export default function CoursesScreen() {
       <View style={styles.categoriesContainer}>
         <FlatList
           horizontal
-          data={categories}
+          data={[{ id: 'all', name: 'All', color: '#6b7280' }, ...categories]}
           renderItem={renderCategoryItem}
           keyExtractor={(item) => item.id}
           showsHorizontalScrollIndicator={false}
@@ -170,6 +194,14 @@ export default function CoursesScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.coursesList}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#2563eb"
+            colors={['#2563eb']}
+          />
+        }
       />
     </SafeAreaView>
   );
