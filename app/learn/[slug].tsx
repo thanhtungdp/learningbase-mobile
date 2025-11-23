@@ -40,7 +40,7 @@ export default function LearnScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container}>
       <WebViewNavBar
         canGoBack={canGoBack}
         onGoBack={handleGoBack}
