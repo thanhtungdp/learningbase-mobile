@@ -10,6 +10,7 @@ interface WebViewNavBarProps {
   onHome: () => void;
   onRefresh: () => void;
   onOptionsPress: () => void;
+  onRouterBack?: () => void;
 }
 
 export function WebViewNavBar({
@@ -18,8 +19,17 @@ export function WebViewNavBar({
   onHome,
   onRefresh,
   onOptionsPress,
+  onRouterBack,
 }: WebViewNavBarProps) {
   const insets = useSafeAreaInsets();
+
+  const handleBackPress = () => {
+    if (canGoBack) {
+      onGoBack();
+    } else if (onRouterBack) {
+      onRouterBack();
+    }
+  };
 
   return (
     <LinearGradient
@@ -31,11 +41,10 @@ export function WebViewNavBar({
       <View style={styles.content}>
         <View style={styles.leftActions}>
           <TouchableOpacity
-            style={[styles.button, !canGoBack && styles.buttonDisabled]}
-            onPress={onGoBack}
-            disabled={!canGoBack}
+            style={styles.button}
+            onPress={handleBackPress}
           >
-            <ChevronLeft size={24} color={canGoBack ? '#ffffff' : 'rgba(255, 255, 255, 0.4)'} />
+            <ChevronLeft size={24} color="#ffffff" />
           </TouchableOpacity>
            <Image
             source={require('@/assets/images/logo-inline_white.png')}
