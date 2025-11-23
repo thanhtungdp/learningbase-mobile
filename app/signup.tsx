@@ -38,7 +38,7 @@ export default function SignupScreen() {
         email,
         password,
       });
-      router.replace('/main');
+      router.replace('/(tabs)/web');
     } catch (err: any) {
       setError(err.message || 'Signup failed. Please try again.');
     } finally {

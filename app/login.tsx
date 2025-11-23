@@ -24,7 +24,7 @@ export default function LoginScreen() {
 
     try {
       await authService.login({ usernameOrEmail, password });
-      router.replace('/main');
+      router.replace('/(tabs)/web');
     } catch (err) {
       setError('Login failed. Please check your credentials.');
     } finally {
