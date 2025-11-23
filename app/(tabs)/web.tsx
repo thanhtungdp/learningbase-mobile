@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { WebViewNavBar } from '@/components/WebViewNavBar';
 import { SkeletonLoading } from '@/components/SkeletonLoading';
 import { authService } from '@/services/authService';
-import { Compass, LogOut, Info, Plus, UserCircle } from 'lucide-react-native';
+import { Compass, LogOut, Info, Plus, UserCircle, Trash2 } from 'lucide-react-native';
 
 const BASE_URL = 'https://learningbases.com';
 
@@ -109,6 +109,32 @@ export default function MainScreen() {
     }
   };
 
+  const handleDeleteAccount = () => {
+    setShowOptionsMenu(false);
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              'How to Delete Account',
+              'To delete your account:\n\n1. Go to Profile Settings\n2. Scroll to the bottom\n3. Click "Delete Account"\n4. Confirm deletion\n\nOr contact support@learningbases.com',
+              [{ text: 'OK' }]
+            );
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   const injectedJavaScript = cookie
     ? `
       (function() {
@@ -197,6 +223,11 @@ export default function MainScreen() {
               <Text style={styles.optionText}>Info</Text>
             </TouchableOpacity>
             <View style={styles.separator} />
+            <TouchableOpacity style={styles.optionItem} onPress={handleDeleteAccount}>
+              <Trash2 size={20} color="#dc2626" />
+              <Text style={[styles.optionText, styles.deleteText]}>Delete Account</Text>
+            </TouchableOpacity>
+            <View style={styles.separator} />
             <TouchableOpacity style={styles.optionItem} onPress={handleLogout}>
               <LogOut size={20} color="#dc2626" />
               <Text style={[styles.optionText, styles.logoutText]}>Logout</Text>
@@ -263,6 +294,9 @@ const styles = StyleSheet.create({
     color: '#1f2937',
   },
   logoutText: {
+    color: '#dc2626',
+  },
+  deleteText: {
     color: '#dc2626',
   },
   separator: {

@@ -16,7 +16,7 @@ export default function IndexScreen() {
       const isAuthenticated = await authService.isAuthenticated();
 
       if (isAuthenticated) {
-        router.replace('/main');
+        router.replace('/(tabs)/web');
       } else {
         router.replace('/login');
       }
