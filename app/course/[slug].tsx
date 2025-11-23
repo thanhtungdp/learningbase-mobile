@@ -217,11 +217,7 @@ export default function CourseDetailScreen() {
       <View style={styles.footer}>
         <TouchableOpacity
           style={styles.enrollButton}
-          onPress={() => {
-            if (course.isEnrolled) {
-              router.push(`/learn/${slug}`);
-            }
-          }}
+          onPress={() => router.push(`/learn/${slug}`)}
         >
           <Text style={styles.enrollButtonText}>
             {course.isEnrolled ? 'Continue Learning' : 'Enroll Now'}
