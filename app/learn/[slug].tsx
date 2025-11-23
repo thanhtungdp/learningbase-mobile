@@ -7,14 +7,14 @@ import { WebViewNavBar } from '@/components/WebViewNavBar';
 import { SkeletonLoading } from '@/components/SkeletonLoading';
 
 export default function LearnScreen() {
-  const { slug } = useLocalSearchParams<{ slug: string }>();
+  const { slug, enrollmentId } = useLocalSearchParams<{ slug: string; enrollmentId: string }>();
   const router = useRouter();
   const webViewRef = useRef<WebView>(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showOptions, setShowOptions] = useState(false);
 
-  const learningUrl = `https://learningbases.com/app/learn/${slug}`;
+  const learningUrl = `https://learningbases.com/app/courses/${slug}/learn/${enrollmentId}`;
 
   const handleGoBack = () => {
     if (webViewRef.current && canGoBack) {

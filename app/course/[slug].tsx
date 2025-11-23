@@ -79,13 +79,19 @@ export default function CourseDetailScreen() {
     if (!course) return;
 
     if (course.isEnrolled && course.enrollmentId) {
-      router.push(`/learn/${course.enrollmentId}`);
+      router.push({
+        pathname: '/learn/[slug]',
+        params: { slug, enrollmentId: course.enrollmentId },
+      });
     } else {
       try {
         setEnrolling(true);
         const enrollment = await authService.enrollCourse(slug);
         setCourse({ ...course, isEnrolled: true, enrollmentId: enrollment.id });
-        router.push(`/learn/${enrollment.id}`);
+        router.push({
+          pathname: '/learn/[slug]',
+          params: { slug, enrollmentId: enrollment.id },
+        });
       } catch (err) {
         console.error('Enrollment failed:', err);
         setError('Failed to enroll in course');
