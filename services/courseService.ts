@@ -64,6 +64,7 @@ export interface CourseDetail extends Course {
     totalEnrollments: number;
   };
   sections: CourseSection[];
+  enrollmentId?: string;
 }
 
 export const courseService = {

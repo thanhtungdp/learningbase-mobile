@@ -7,9 +7,11 @@ import {
   Image,
   TouchableOpacity,
   SafeAreaView,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { courseService, CourseDetail } from '@/services/courseService';
+import { authService } from '@/services/authService';
 import { ArrowLeft, Clock, BookOpen, BarChart, Users, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { CourseDetailSkeleton } from '@/components/CourseDetailSkeleton';
 
@@ -20,6 +22,7 @@ export default function CourseDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [enrolling, setEnrolling] = useState(false);
 
   useEffect(() => {
     if (slug) {
@@ -70,6 +73,26 @@ export default function CourseDetailScreen() {
 
   const stripHtml = (html: string) => {
     return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
+  };
+
+  const handleEnrollOrContinue = async () => {
+    if (!course) return;
+
+    if (course.isEnrolled && course.enrollmentId) {
+      router.push(`/learn/${course.enrollmentId}`);
+    } else {
+      try {
+        setEnrolling(true);
+        const enrollment = await authService.enrollCourse(slug);
+        setCourse({ ...course, isEnrolled: true, enrollmentId: enrollment.id });
+        router.push(`/learn/${enrollment.id}`);
+      } catch (err) {
+        console.error('Enrollment failed:', err);
+        setError('Failed to enroll in course');
+      } finally {
+        setEnrolling(false);
+      }
+    }
   };
 
   if (loading) {
@@ -216,12 +239,17 @@ export default function CourseDetailScreen() {
 
       <View style={styles.footer}>
         <TouchableOpacity
-          style={styles.enrollButton}
-          onPress={() => router.push(`/learn/${slug}`)}
+          style={[styles.enrollButton, enrolling && styles.enrollButtonDisabled]}
+          onPress={handleEnrollOrContinue}
+          disabled={enrolling}
         >
-          <Text style={styles.enrollButtonText}>
-            {course.isEnrolled ? 'Continue Learning' : 'Enroll Now'}
-          </Text>
+          {enrolling ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.enrollButtonText}>
+              {course.isEnrolled ? 'Continue Learning' : 'Enroll Now'}
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -460,6 +488,9 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
+  },
+  enrollButtonDisabled: {
+    opacity: 0.6,
   },
   enrollButtonText: {
     fontSize: 16,

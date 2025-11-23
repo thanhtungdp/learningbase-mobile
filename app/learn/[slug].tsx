@@ -14,7 +14,7 @@ export default function LearnScreen() {
   const [loading, setLoading] = useState(true);
   const [showOptions, setShowOptions] = useState(false);
 
-  const learningUrl = `https://learningbases.com/app/courses/${slug}/learn/`;
+  const learningUrl = `https://learningbases.com/app/learn/${slug}`;
 
   const handleGoBack = () => {
     if (webViewRef.current && canGoBack) {

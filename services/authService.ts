@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LOGIN_API_URL = 'https://learningbases.com/api/login';
 const REGISTER_API_URL = 'https://learningbases.com/api/register';
+const ENROLLMENT_API_URL = 'https://learningbases.com/api/enrollments';
 const ORGANIZATION_ID = 'fb5f5a11-9cd2-43a8-964e-240c9ff9ea22';
 
 export interface LoginCredentials {
@@ -29,6 +30,16 @@ export interface User {
 export interface AuthResponse {
   user: User;
   cookie: string;
+}
+
+export interface Enrollment {
+  id: string;
+  userId: string;
+  courseId: string;
+  enrolledAt: string;
+  completedAt: string | null;
+  progress: number;
+  lastAccessedAt: string | null;
 }
 
 const STORAGE_KEYS = {
@@ -147,6 +158,35 @@ export const authService = {
       return await AsyncStorage.getItem(STORAGE_KEYS.LAST_URL);
     } catch {
       return null;
+    }
+  },
+
+  async enrollCourse(courseId: string): Promise<Enrollment> {
+    try {
+      const cookie = await this.getStoredCookie();
+
+      const response = await fetch(ENROLLMENT_API_URL, {
+        method: 'POST',
+        headers: {
+          'accept': '*/*',
+          'accept-language': 'en-US,en;q=0.9',
+          'content-type': 'application/json',
+          'origin': 'https://learningbases.com',
+          'referer': `https://learningbases.com/app/courses/${courseId}`,
+          'x-organization-id': ORGANIZATION_ID,
+          'Cookie': cookie || '',
+        },
+        body: JSON.stringify({ courseId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Enrollment failed');
+      }
+
+      const enrollment: Enrollment = await response.json();
+      return enrollment;
+    } catch (error) {
+      throw error;
     }
   },
 };
