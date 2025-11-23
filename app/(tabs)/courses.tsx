@@ -5,7 +5,6 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  ActivityIndicator,
   Image,
   ScrollView,
   SafeAreaView,
@@ -14,6 +13,7 @@ import {
 import { useRouter } from 'expo-router';
 import { courseService, CourseCategory, Course } from '@/services/courseService';
 import { BookOpen, Clock, BarChart, Globe } from 'lucide-react-native';
+import { CourseSkeletonLoading } from '@/components/CourseSkeletonLoading';
 
 export default function CoursesScreen() {
   const router = useRouter();
@@ -152,11 +152,7 @@ export default function CoursesScreen() {
   };
 
   if (loading) {
-    return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#2563eb" />
-      </View>
-    );
+    return <CourseSkeletonLoading />;
   }
 
   if (error) {

@@ -6,12 +6,12 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-  ActivityIndicator,
   SafeAreaView,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { courseService, CourseDetail } from '@/services/courseService';
 import { ArrowLeft, Clock, BookOpen, BarChart, Users, ChevronDown, ChevronUp } from 'lucide-react-native';
+import { CourseDetailSkeleton } from '@/components/CourseDetailSkeleton';
 
 export default function CourseDetailScreen() {
   const router = useRouter();
@@ -73,11 +73,7 @@ export default function CourseDetailScreen() {
   };
 
   if (loading) {
-    return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#2563eb" />
-      </View>
-    );
+    return <CourseDetailSkeleton />;
   }
 
   if (error || !course) {
