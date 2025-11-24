@@ -1,11 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, StyleSheet, Alert, Modal, TouchableOpacity, Text, DeviceEventEmitter } from 'react-native';
+import { View, StyleSheet, Alert, Modal, TouchableOpacity, Text, DeviceEventEmitter, Image, ScrollView, ActivityIndicator } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useRouter } from 'expo-router';
 import { WebViewNavBar } from '@/components/WebViewNavBar';
 import { SkeletonLoading } from '@/components/SkeletonLoading';
-import { authService } from '@/services/authService';
-import { Compass, LogOut, Info, Plus, UserCircle, Trash2 } from 'lucide-react-native';
+import { authService, Organization } from '@/services/authService';
+import { Compass, LogOut, Info, Plus, UserCircle, Trash2, Check } from 'lucide-react-native';
 
 const BASE_URL = 'https://learningbases.com';
 
@@ -15,6 +15,10 @@ export default function MainScreen() {
   const [canGoBack, setCanGoBack] = useState(false);
   const [cookie, setCookie] = useState<string | null>(null);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [showOrganizationModal, setShowOrganizationModal] = useState(false);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+  const [loadingOrgs, setLoadingOrgs] = useState(false);
   const [initialUrl, setInitialUrl] = useState<string>(BASE_URL);
   const [isLoading, setIsLoading] = useState(true);
   const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -35,6 +39,11 @@ export default function MainScreen() {
     const lastUrl = await authService.getLastVisitedUrl();
     if (lastUrl) {
       setInitialUrl(lastUrl);
+    }
+
+    const storedOrgId = await authService.getStoredOrganizationId();
+    if (storedOrgId) {
+      setSelectedOrgId(storedOrgId);
     }
   };
 
@@ -135,6 +144,38 @@ export default function MainScreen() {
     );
   };
 
+  const handleOrganizationPress = async () => {
+    setShowOrganizationModal(true);
+    setLoadingOrgs(true);
+    try {
+      const orgs = await authService.getUserOrganizations();
+      setOrganizations(orgs);
+    } catch (error) {
+      console.error('Failed to load organizations:', error);
+      Alert.alert('Error', 'Failed to load organizations');
+    } finally {
+      setLoadingOrgs(false);
+    }
+  };
+
+  const handleSelectOrganization = (orgId: string) => {
+    setSelectedOrgId(orgId);
+    authService.saveOrganizationId(orgId);
+
+    if (webViewRef.current) {
+      webViewRef.current.injectJavaScript(`
+        (function() {
+          localStorage.setItem('selectedOrganizationId', '${orgId}');
+          window.location.reload();
+        })();
+        true;
+      `);
+    }
+
+    setShowOrganizationModal(false);
+    DeviceEventEmitter.emit('ORGANIZATION_CHANGED', { organizationId: orgId });
+  };
+
   const injectedJavaScript = cookie
     ? `
       (function() {
@@ -180,6 +221,7 @@ export default function MainScreen() {
         onHome={handleHome}
         onRefresh={handleRefresh}
         onOptionsPress={handleOptionsPress}
+        onOrganizationPress={handleOrganizationPress}
       />
       <View style={styles.webviewContainer}>
         <WebView
@@ -275,6 +317,66 @@ export default function MainScreen() {
           </View>
         </TouchableOpacity>
       </Modal>
+
+      <Modal
+        visible={showOrganizationModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowOrganizationModal(false)}
+      >
+        <View style={styles.organizationModalOverlay}>
+          <View style={styles.organizationModal}>
+            <Text style={styles.modalTitle}>Select Organization</Text>
+
+            {loadingOrgs ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#2266E1" />
+              </View>
+            ) : (
+              <ScrollView style={styles.organizationList}>
+                {organizations.map((org) => (
+                  <TouchableOpacity
+                    key={org.id}
+                    style={styles.organizationItem}
+                    onPress={() => handleSelectOrganization(org.id)}
+                  >
+                    <View style={styles.organizationInfo}>
+                      {org.logoUrl ? (
+                        <Image
+                          source={{ uri: `https://learningbases.com${org.logoUrl}` }}
+                          style={styles.organizationLogo}
+                        />
+                      ) : (
+                        <View style={styles.organizationLogoPlaceholder}>
+                          <Text style={styles.organizationLogoText}>
+                            {org.name.charAt(0).toUpperCase()}
+                          </Text>
+                        </View>
+                      )}
+                      <View style={styles.organizationDetails}>
+                        <Text style={styles.organizationName}>{org.name}</Text>
+                        {org.shortName && (
+                          <Text style={styles.organizationShortName}>{org.shortName}</Text>
+                        )}
+                      </View>
+                    </View>
+                    {selectedOrgId === org.id && (
+                      <Check size={20} color="#2266E1" />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
+
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowOrganizationModal(false)}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -342,5 +444,94 @@ const styles = StyleSheet.create({
   separator: {
     height: 1,
     backgroundColor: '#e5e7eb',
+  },
+  organizationModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  organizationModal: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '80%',
+    paddingTop: 24,
+    paddingBottom: 32,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#1f2937',
+    textAlign: 'center',
+    marginBottom: 20,
+    paddingHorizontal: 24,
+  },
+  loadingContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
+  },
+  organizationList: {
+    maxHeight: 400,
+    paddingHorizontal: 16,
+  },
+  organizationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  organizationInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+  },
+  organizationLogo: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+  },
+  organizationLogoPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    backgroundColor: '#2266E1',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  organizationLogoText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  organizationDetails: {
+    flex: 1,
+  },
+  organizationName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 2,
+  },
+  organizationShortName: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  closeButton: {
+    marginTop: 16,
+    marginHorizontal: 24,
+    paddingVertical: 14,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1f2937',
   },
 });

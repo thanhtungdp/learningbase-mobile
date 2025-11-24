@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { ChevronLeft, Home, RefreshCw, MoreVertical } from 'lucide-react-native';
+import { ChevronLeft, Home, RefreshCw, MoreVertical, Building2 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -11,6 +11,7 @@ interface WebViewNavBarProps {
   onRefresh: () => void;
   onOptionsPress: () => void;
   onRouterBack?: () => void;
+  onOrganizationPress?: () => void;
 }
 
 export function WebViewNavBar({
@@ -20,6 +21,7 @@ export function WebViewNavBar({
   onRefresh,
   onOptionsPress,
   onRouterBack,
+  onOrganizationPress,
 }: WebViewNavBarProps) {
   const insets = useSafeAreaInsets();
 
@@ -54,6 +56,12 @@ export function WebViewNavBar({
         </View>
          
         <View style={styles.rightActions}>
+          {onOrganizationPress && (
+            <TouchableOpacity style={styles.button} onPress={onOrganizationPress}>
+              <Building2 size={22} color="#ffffff" />
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity style={styles.button} onPress={onRefresh}>
             <RefreshCw size={22} color="#ffffff" />
           </TouchableOpacity>

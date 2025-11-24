@@ -1,8 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const LOGIN_API_URL = 'https://learningbases.com/api/login';
-const REGISTER_API_URL = 'https://learningbases.com/api/register';
-const ENROLLMENT_API_URL = 'https://learningbases.com/api/enrollments';
+const BASE_API_URL = 'https://learningbases.com/api';
+const LOGIN_API_URL = `${BASE_API_URL}/login`;
+const REGISTER_API_URL = `${BASE_API_URL}/register`;
+const ENROLLMENT_API_URL = `${BASE_API_URL}/enrollments`;
+const ORGANIZATIONS_API_URL = `${BASE_API_URL}/user/organizations`;
 const ORGANIZATION_ID = 'fb5f5a11-9cd2-43a8-964e-240c9ff9ea22';
 
 export interface LoginCredentials {
@@ -40,6 +42,33 @@ export interface Enrollment {
   completedAt: string | null;
   progress: number;
   lastAccessedAt: string | null;
+}
+
+export interface OrganizationMembership {
+  id: string;
+  userId: string;
+  organizationId: string;
+  role: string;
+  status: string;
+  joinedAt: string;
+}
+
+export interface Organization {
+  id: string;
+  name: string;
+  shortName: string | null;
+  description: string;
+  logoUrl: string | null;
+  contactEmail: string | null;
+  phone: string | null;
+  website: string | null;
+  address: string | null;
+  isPublic: boolean;
+  publicSlug: string;
+  organizationType: string;
+  createdAt: string;
+  updatedAt: string;
+  membership: OrganizationMembership;
 }
 
 const STORAGE_KEYS = {
@@ -205,6 +234,31 @@ export const authService = {
       return await AsyncStorage.getItem(STORAGE_KEYS.ORGANIZATION_ID);
     } catch {
       return null;
+    }
+  },
+
+  async getUserOrganizations(): Promise<Organization[]> {
+    try {
+      const cookie = await this.getStoredCookie();
+      const orgId = await this.getStoredOrganizationId() || ORGANIZATION_ID;
+
+      const response = await fetch(ORGANIZATIONS_API_URL, {
+        headers: {
+          'accept': '*/*',
+          'accept-language': 'en-US,en;q=0.9',
+          'x-organization-id': orgId,
+          'Cookie': cookie || '',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch organizations');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching organizations:', error);
+      throw error;
     }
   },
 };
