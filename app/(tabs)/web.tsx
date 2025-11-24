@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, StyleSheet, Alert, Modal, TouchableOpacity, Text } from 'react-native';
+import { View, StyleSheet, Alert, Modal, TouchableOpacity, Text, DeviceEventEmitter } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useRouter } from 'expo-router';
 import { WebViewNavBar } from '@/components/WebViewNavBar';
@@ -208,6 +208,7 @@ export default function MainScreen() {
             const data = JSON.parse(event.nativeEvent.data);
             if (data.type === 'ORGANIZATION_CHANGED' && data.organizationId) {
               authService.saveOrganizationId(data.organizationId);
+              DeviceEventEmitter.emit('ORGANIZATION_CHANGED', { organizationId: data.organizationId });
             }
           } catch (error) {
             console.error('Error parsing WebView message:', error);
