@@ -1,7 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BASE_URL = 'https://learningbases.com/api';
-const ORGANIZATION_ID = 'd4e9122a-10bc-4050-ba11-7d05b7a87d8e';
+const DEFAULT_ORGANIZATION_ID = 'd4e9122a-10bc-4050-ba11-7d05b7a87d8e';
+const STORAGE_KEYS = {
+  ORGANIZATION_ID: '@learningbases/organization_id',
+};
 
 export interface CourseCategory {
   id: string;
@@ -68,16 +71,22 @@ export interface CourseDetail extends Course {
 }
 
 export const courseService = {
+  async getOrganizationId(): Promise<string> {
+    const orgId = await AsyncStorage.getItem(STORAGE_KEYS.ORGANIZATION_ID);
+    return orgId || DEFAULT_ORGANIZATION_ID;
+  },
+
   async getCategories(): Promise<CourseCategory[]> {
     try {
       const cookie = await AsyncStorage.getItem('userCookie');
+      const orgId = await this.getOrganizationId();
 
       const response = await fetch(
-        `${BASE_URL}/organizations/${ORGANIZATION_ID}/course-categories`,
+        `${BASE_URL}/organizations/${orgId}/course-categories`,
         {
           headers: {
             'accept': '*/*',
-            'x-organization-id': ORGANIZATION_ID,
+            'x-organization-id': orgId,
             ...(cookie ? { 'Cookie': cookie } : {}),
           },
         }
@@ -97,11 +106,12 @@ export const courseService = {
   async getCourses(): Promise<Course[]> {
     try {
       const cookie = await AsyncStorage.getItem('userCookie');
+      const orgId = await this.getOrganizationId();
 
       const response = await fetch(`${BASE_URL}/courses`, {
         headers: {
           'accept': '*/*',
-          'x-organization-id': ORGANIZATION_ID,
+          'x-organization-id': orgId,
           ...(cookie ? { 'Cookie': cookie } : {}),
         },
       });
@@ -120,11 +130,12 @@ export const courseService = {
   async getCourseDetail(slug: string): Promise<CourseDetail> {
     try {
       const cookie = await AsyncStorage.getItem('userCookie');
+      const orgId = await this.getOrganizationId();
 
       const response = await fetch(`${BASE_URL}/courses/${slug}`, {
         headers: {
           'accept': '*/*',
-          'x-organization-id': ORGANIZATION_ID,
+          'x-organization-id': orgId,
           ...(cookie ? { 'Cookie': cookie } : {}),
         },
       });

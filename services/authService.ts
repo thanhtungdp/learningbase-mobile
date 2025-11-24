@@ -46,6 +46,7 @@ const STORAGE_KEYS = {
   USER: '@learningbases/user',
   COOKIE: '@learningbases/cookie',
   LAST_URL: '@learningbases/last_url',
+  ORGANIZATION_ID: '@learningbases/organization_id',
 };
 
 export const authService = {
@@ -164,6 +165,7 @@ export const authService = {
   async enrollCourse(courseId: string): Promise<Enrollment> {
     try {
       const cookie = await this.getStoredCookie();
+      const orgId = await this.getStoredOrganizationId() || ORGANIZATION_ID;
 
       const response = await fetch(ENROLLMENT_API_URL, {
         method: 'POST',
@@ -173,7 +175,7 @@ export const authService = {
           'content-type': 'application/json',
           'origin': 'https://learningbases.com',
           'referer': `https://learningbases.com/app/courses/${courseId}`,
-          'x-organization-id': ORGANIZATION_ID,
+          'x-organization-id': orgId,
           'Cookie': cookie || '',
         },
         body: JSON.stringify({ courseId }),
@@ -187,6 +189,22 @@ export const authService = {
       return enrollment;
     } catch (error) {
       throw error;
+    }
+  },
+
+  async saveOrganizationId(organizationId: string): Promise<void> {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.ORGANIZATION_ID, organizationId);
+    } catch {
+      // Ignore error
+    }
+  },
+
+  async getStoredOrganizationId(): Promise<string | null> {
+    try {
+      return await AsyncStorage.getItem(STORAGE_KEYS.ORGANIZATION_ID);
+    } catch {
+      return null;
     }
   },
 };

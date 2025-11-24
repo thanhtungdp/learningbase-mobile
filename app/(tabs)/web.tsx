@@ -144,6 +144,34 @@ export default function MainScreen() {
     `
     : '';
 
+  const localStorageMonitorScript = `
+    (function() {
+      const originalSetItem = localStorage.setItem;
+      localStorage.setItem = function(key, value) {
+        originalSetItem.apply(this, arguments);
+        if (key === 'selectedOrganizationId') {
+          window.ReactNativeWebView.postMessage(JSON.stringify({
+            type: 'ORGANIZATION_CHANGED',
+            organizationId: value
+          }));
+        }
+      };
+
+      const checkOrgId = () => {
+        const orgId = localStorage.getItem('selectedOrganizationId');
+        if (orgId) {
+          window.ReactNativeWebView.postMessage(JSON.stringify({
+            type: 'ORGANIZATION_CHANGED',
+            organizationId: orgId
+          }));
+        }
+      };
+      checkOrgId();
+      setTimeout(checkOrgId, 1000);
+    })();
+    true;
+  `;
+
   return (
     <View style={styles.container}>
       <WebViewNavBar
@@ -175,7 +203,18 @@ export default function MainScreen() {
             authService.saveLastVisitedUrl(navState.url);
           }
         }}
+        onMessage={(event) => {
+          try {
+            const data = JSON.parse(event.nativeEvent.data);
+            if (data.type === 'ORGANIZATION_CHANGED' && data.organizationId) {
+              authService.saveOrganizationId(data.organizationId);
+            }
+          } catch (error) {
+            console.error('Error parsing WebView message:', error);
+          }
+        }}
         injectedJavaScriptBeforeContentLoaded={injectedJavaScript}
+        injectedJavaScript={localStorageMonitorScript}
         sharedCookiesEnabled={true}
         thirdPartyCookiesEnabled={true}
         cacheEnabled={true}

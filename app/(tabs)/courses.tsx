@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { courseService, CourseCategory, Course } from '@/services/courseService';
+import { authService } from '@/services/authService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BookOpen, Clock, BarChart, Globe } from 'lucide-react-native';
 import { CourseSkeletonLoading } from '@/components/CourseSkeletonLoading';
 
@@ -26,7 +28,21 @@ export default function CoursesScreen() {
 
   useEffect(() => {
     loadData();
+    const interval = setInterval(checkOrganizationChange, 2000);
+    return () => clearInterval(interval);
   }, []);
+
+  const [lastOrgId, setLastOrgId] = useState<string | null>(null);
+
+  const checkOrganizationChange = useCallback(async () => {
+    const currentOrgId = await authService.getStoredOrganizationId();
+    if (currentOrgId && currentOrgId !== lastOrgId) {
+      setLastOrgId(currentOrgId);
+      if (lastOrgId !== null) {
+        loadData(true);
+      }
+    }
+  }, [lastOrgId]);
 
   const loadData = async (isRefresh = false) => {
     try {
