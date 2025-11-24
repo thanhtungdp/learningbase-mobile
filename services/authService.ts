@@ -240,13 +240,11 @@ export const authService = {
   async getUserOrganizations(): Promise<Organization[]> {
     try {
       const cookie = await this.getStoredCookie();
-      const orgId = await this.getStoredOrganizationId() || ORGANIZATION_ID;
 
       const response = await fetch(ORGANIZATIONS_API_URL, {
         headers: {
           'accept': '*/*',
           'accept-language': 'en-US,en;q=0.9',
-          'x-organization-id': orgId,
           'Cookie': cookie || '',
         },
       });
